@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo pedido</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            María Almenara
+            <small>Gestión de Pedidos</small>
+        </div>
+
+        <div class="menu-item">Dashboard</div>
+        <div class="menu-item">Pedidos</div>
+        <div class="menu-item active">Nuevo pedido</div>
+        <div class="menu-item">Clientes</div>
+        <div class="menu-item">Catálogo</div>
+
+    </aside>
+
+    <main class="main">
+
+        <div class="topbar">
+
+            <div class="page-title">
+                <h1>Registrar pedido</h1>
+                <p>Complete los datos del cliente y productos solicitados.</p>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Datos del cliente</h3>
+
+            <br>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <input type="text" value="Andrea Torres">
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" value="987 654 321">
+                </div>
+
+                <div class="form-group">
+                    <label>Sede</label>
+                    <select>
+                        <option>Seleccionar sede</option>
+                        <option selected>Miraflores</option>
+                        <option>San Isidro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Modalidad</label>
+                    <select>
+                        <option selected>Recojo</option>
+                        <option>Delivery</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha requerida</label>
+                    <input type="date" value="2026-09-06">
+                </div>
+
+            </div>
+
+            <br>
+
+            <h3>Detalle del pedido</h3>
+
+            <div class="product-row">
+
+                <div class="product-header">
+                    <strong>Torta 1</strong>
+                    <span>Producto agregado</span>
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Torta</label>
+                        <select>
+                            <option selected>Torta de chocolate</option>
+                            <option>Torta de vainilla</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" value="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tamaño</label>
+                        <select>
+                            <option>Pequeña</option>
+                            <option selected>Mediana</option>
+                            <option>Grande</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sabor</label>
+                        <select>
+                            <option selected>Chocolate</option>
+                            <option>Vainilla</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Mensaje personalizado</label>
+                        <input type="text" value="Feliz cumpleaños Valentina">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="product-row">
+
+                <div class="product-header">
+                    <strong>Torta 2</strong>
+                    <span>Producto agregado</span>
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Torta</label>
+                        <select>
+                            <option>Torta de chocolate</option>
+                            <option selected>Torta de vainilla</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" value="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tamaño</label>
+                        <select>
+                            <option>Pequeña</option>
+                            <option>Mediana</option>
+                            <option selected>Grande</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sabor</label>
+                        <select>
+                            <option>Chocolate</option>
+                            <option selected>Vainilla</option>
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button class="btn btn-secondary" style="margin-top:15px;">
+                + Agregar otra torta
+            </button>
+
+            <div class="form-group full" style="margin-top:20px;">
+                <label>Observaciones</label>
+                <textarea placeholder="Observaciones adicionales"></textarea>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-secondary">Cancelar</button>
+                <button class="btn btn-primary">Registrar pedido</button>
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

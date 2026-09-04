@@ -1,0 +1,29 @@
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Dependencias
+/vendor/
+
+# Logs
+*.log
+/logs/
+
+# Archivos temporales
+/tmp/
+/cache/
+
+# Configuracion local
+/config/local.php
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
