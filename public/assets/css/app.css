@@ -1,0 +1,123 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f5f2;
+    color: #292929;
+}
+
+.login-page {
+    min-height: 100vh;
+}
+
+.login-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.login-info {
+    flex: 1;
+    background: #6f263d;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 70px;
+}
+
+.login-info h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.login-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    width: 380px;
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    border: 1px solid #ddd;
+}
+
+.login-card label {
+    display: block;
+    margin-top: 18px;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+}
+
+.login-card button,
+.topbar button {
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.login-card button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 12px;
+    background: #6f263d;
+    color: white;
+    font-weight: bold;
+}
+
+.alert-error {
+    background: #fdeaea;
+    border: 1px solid #e7bcbc;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+.topbar {
+    background: white;
+    border-bottom: 1px solid #ddd;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar span,
+.topbar small {
+    display: block;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-info button {
+    padding: 8px 13px;
+}
+
+.content {
+    padding: 30px;
+}
+
+.admin-box {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
