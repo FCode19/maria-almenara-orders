@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Session;
 use App\Middleware\AuthMiddleware;
 use App\Helpers\View;
+use App\Services\PedidoService;
 
 class DashboardController
 {
@@ -12,8 +13,11 @@ class DashboardController
     {
         AuthMiddleware::handle();
 
+        $service = new PedidoService();
+
         View::render('dashboard.index', [
-            'user' => Session::get('auth_user')
+            'user' => Session::get('auth_user'),
+            'dashboard' => $service->dashboard()
         ]);
     }
 }

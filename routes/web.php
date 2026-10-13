@@ -2,6 +2,7 @@
 
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\PedidoController;
 use App\Core\Session;
 use App\Helpers\Response;
 use App\Middleware\RoleMiddleware;
@@ -33,6 +34,12 @@ $router->get(
     '/dashboard',
     [DashboardController::class, 'index']
 );
+
+$router->get('/pedidos', [PedidoController::class, 'index']);
+$router->get('/pedidos/nuevo', [PedidoController::class, 'create']);
+$router->post('/pedidos', [PedidoController::class, 'store']);
+$router->get('/pedidos/{id}', [PedidoController::class, 'show']);
+$router->post('/pedidos/{id}/estado', [PedidoController::class, 'updateState']);
 
 
 
