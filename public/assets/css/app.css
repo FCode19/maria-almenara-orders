@@ -262,7 +262,10 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
 .menu-icon { width: 20px; text-align: center; font-size: 18px; line-height: 1; }
 .sidebar-user { display: grid; grid-template-columns: 34px 1fr 24px; align-items: center; gap: 10px; padding: 18px 7px 0; }
 .sidebar-user strong { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sidebar-user span { margin-top: 2px; }
+.sidebar-user > .avatar { display: grid; place-items: center; margin: 0; opacity: 1; font-size: 11px; line-height: 1; }
+.sidebar-user > div { min-width: 0; }
+.sidebar-user > div > span { margin-top: 2px; }
+.sidebar-user form { display: flex; justify-content: flex-end; margin: 0; }
 .logout-button { margin: 0; padding: 5px; text-decoration: none; font-size: 18px; }
 .main-content { margin-left: 232px; padding: 32px clamp(22px, 3vw, 46px) 54px; max-width: 1600px; }
 .page-header { margin-bottom: 22px; }
@@ -352,8 +355,5 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
 .api-response-meta { display: flex; justify-content: space-between; gap: 12px; margin: 17px 0 9px; color: #c2b7bb; font-size: 10px; }
 .api-response-meta span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .api-response-panel pre { max-height: 560px; min-height: 330px; margin: 0; padding: 16px; overflow: auto; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; color: #f2e9ed; background: #211d1f; font: 11px/1.6 Consolas, Monaco, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
-.api-help { display: flex; align-items: center; justify-content: space-between; gap: 25px; }
-.api-help h2 { margin-bottom: 5px; }.api-help p { margin: 0; color: var(--muted); font-size: 12px; }
-.api-help > div:last-child { display: grid; gap: 7px; }.api-help code { padding: 8px 11px; border-radius: 7px; background: #f2eeeb; font-size: 11px; }
-@media (max-width: 1050px) { .api-layout { grid-template-columns: 1fr; }.api-response-panel { position: static; }.api-response-panel pre { min-height: 240px; }.api-help { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 1050px) { .api-layout { grid-template-columns: 1fr; }.api-response-panel { position: static; }.api-response-panel pre { min-height: 240px; } }
 @media (max-width: 560px) { .api-card { align-items: stretch; flex-direction: column; }.api-card > .api-run { width: 100%; }.api-input-row { flex-direction: column; }.api-response-meta { align-items: flex-start; flex-direction: column; } }

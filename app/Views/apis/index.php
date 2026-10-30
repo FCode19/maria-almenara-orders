@@ -20,6 +20,5 @@ require BASE_PATH . '/app/Views/layouts/header.php';
   "message": "Aquí aparecerá la respuesta"
 }</pre></aside>
 </section>
-<section class="card api-help section-gap"><div><span class="eyebrow">Integración externa</span><h2>Autenticación para Telegram o n8n</h2><p>Envía la clave configurada en uno de estos encabezados. La consola nunca muestra su valor.</p></div><div><code>X-API-Key: TU_CLAVE</code><code>Authorization: Bearer TU_CLAVE</code></div></section>
 <script src="/assets/js/api-console.js" defer></script>
 <?php require BASE_PATH . '/app/Views/layouts/footer.php'; ?>
