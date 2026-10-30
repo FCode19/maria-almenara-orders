@@ -28,6 +28,12 @@ class Env
             $key = trim($key);
             $value = trim($value);
 
+            // Las variables definidas por el servidor tienen prioridad sobre .env.
+            // Esto permite pruebas y despliegues seguros sin reescribir credenciales.
+            if (getenv($key) !== false) {
+                continue;
+            }
+
             if (
                 (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
                 (str_starts_with($value, "'") && str_ends_with($value, "'"))

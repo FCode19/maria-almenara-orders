@@ -3,9 +3,10 @@
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\PedidoController;
+use App\Controllers\UsuarioController;
+use App\Controllers\ApiConsoleController;
 use App\Core\Session;
 use App\Helpers\Response;
-use App\Middleware\RoleMiddleware;
 
 $router->get('/', function (): void {
     if (Session::has('auth_user')) {
@@ -43,12 +44,8 @@ $router->post('/pedidos/{id}/estado', [PedidoController::class, 'updateState']);
 
 
 
-$router->get('/usuarios', function (): void {
-    RoleMiddleware::handle('Administrador');
-
-    Response::html(
-        '<h1>Usuarios</h1>
-         <p>Acceso administrativo autorizado.</p>
-         <p>Modulo pendiente de implementacion funcional.</p>'
-    );
-});
+$router->get('/usuarios', [UsuarioController::class, 'index']);
+$router->get('/usuarios/nuevo', [UsuarioController::class, 'create']);
+$router->post('/usuarios', [UsuarioController::class, 'store']);
+$router->post('/usuarios/{id}/estado', [UsuarioController::class, 'toggleState']);
+$router->get('/apis', [ApiConsoleController::class, 'index']);

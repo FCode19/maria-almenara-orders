@@ -28,6 +28,13 @@ class PedidoRepository
             ->fetchAll();
     }
 
+    public function sites(): array
+    {
+        return Database::connection()
+            ->query('SELECT id_sede, nombre FROM tbl_sede WHERE activo = 1 ORDER BY nombre')
+            ->fetchAll();
+    }
+
     public function list(array $filters = []): array
     {
         $where = [];
@@ -46,12 +53,49 @@ class PedidoRepository
             $params['state'] = $filters['state'];
         }
 
+        if (($filters['site'] ?? 0) > 0) {
+            $where[] = 'p.id_sede = :site';
+            $params['site'] = (int) $filters['site'];
+        }
+        if (($filters['modality'] ?? '') !== '') {
+            $where[] = 'p.modalidad = :modality';
+            $params['modality'] = $filters['modality'];
+        }
+        if (($filters['date_from'] ?? '') !== '') {
+            $where[] = 'p.fecha_requerida >= :date_from';
+            $params['date_from'] = $filters['date_from'];
+        }
+        if (($filters['date_to'] ?? '') !== '') {
+            $where[] = 'p.fecha_requerida <= :date_to';
+            $params['date_to'] = $filters['date_to'];
+        }
+        $urgency = $filters['urgency'] ?? '';
+        if ($urgency !== '') {
+            $where[] = "e.nombre NOT IN ('Entregado', 'Cancelado')";
+            if ($urgency === 'overdue') {
+                $where[] = 'p.fecha_requerida < CURDATE()';
+            } elseif ($urgency === 'today') {
+                $where[] = 'p.fecha_requerida = CURDATE()';
+            } else {
+                $where[] = 'p.fecha_requerida BETWEEN DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)';
+            }
+        }
+
         $sql = "SELECT p.id_pedido, p.codigo_pedido, p.codigo_seguimiento, p.modalidad,
                        p.fecha_pedido, p.fecha_requerida, e.nombre AS estado,
-                       CONCAT(c.nombres, ' ', COALESCE(c.apellidos, '')) AS cliente
+                       s.nombre AS sede,
+                       CONCAT(c.nombres, ' ', COALESCE(c.apellidos, '')) AS cliente,
+                       CASE
+                         WHEN e.nombre IN ('Entregado','Cancelado') THEN 'none'
+                         WHEN p.fecha_requerida < CURDATE() THEN 'overdue'
+                         WHEN p.fecha_requerida = CURDATE() THEN 'today'
+                         WHEN p.fecha_requerida <= DATE_ADD(CURDATE(), INTERVAL 3 DAY) THEN 'soon'
+                         ELSE 'normal'
+                       END AS urgency
                 FROM tbl_pedido p
                 INNER JOIN tbl_cliente c ON c.id_cliente = p.id_cliente
-                INNER JOIN tbl_estado_pedido e ON e.id_estado = p.id_estado_actual";
+                INNER JOIN tbl_estado_pedido e ON e.id_estado = p.id_estado_actual
+                INNER JOIN tbl_sede s ON s.id_sede = p.id_sede";
 
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
@@ -239,12 +283,15 @@ class PedidoRepository
         $db = Database::connection();
         $kpis = $db->query(
             "SELECT COUNT(*) AS total,
+                    SUM(e.nombre NOT IN ('Entregado','Cancelado')) AS activos,
                     SUM(e.nombre = 'Registrado') AS registrados,
                     SUM(e.nombre = 'En produccion') AS en_produccion,
                     SUM(e.nombre = 'Terminado') AS terminados,
                     SUM(e.nombre = 'Entregado') AS entregados,
                     SUM(e.nombre = 'Cancelado') AS cancelados,
-                    SUM(p.fecha_requerida BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY) AND e.nombre NOT IN ('Entregado','Cancelado')) AS proximos
+                    SUM(p.fecha_requerida < CURDATE() AND e.nombre NOT IN ('Entregado','Cancelado')) AS vencidos,
+                    SUM(p.fecha_requerida = CURDATE() AND e.nombre NOT IN ('Entregado','Cancelado')) AS vencen_hoy,
+                    SUM(p.fecha_requerida BETWEEN DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND DATE_ADD(CURDATE(), INTERVAL 3 DAY) AND e.nombre NOT IN ('Entregado','Cancelado')) AS proximos
              FROM tbl_pedido p INNER JOIN tbl_estado_pedido e ON e.id_estado = p.id_estado_actual"
         )->fetch();
 
@@ -252,16 +299,53 @@ class PedidoRepository
             'SELECT e.nombre AS estado, COUNT(p.id_pedido) AS total FROM tbl_estado_pedido e LEFT JOIN tbl_pedido p ON p.id_estado_actual = e.id_estado WHERE e.activo = 1 GROUP BY e.id_estado, e.nombre, e.orden ORDER BY e.orden'
         )->fetchAll();
 
-        $upcoming = $db->query(
+        $alerts = $db->query(
             "SELECT p.id_pedido, p.codigo_pedido, p.fecha_requerida, e.nombre AS estado,
-                    CONCAT(c.nombres, ' ', COALESCE(c.apellidos, '')) AS cliente
+                    s.nombre AS sede, CONCAT(c.nombres, ' ', COALESCE(c.apellidos, '')) AS cliente,
+                    CASE WHEN p.fecha_requerida < CURDATE() THEN 'overdue'
+                         WHEN p.fecha_requerida = CURDATE() THEN 'today' ELSE 'soon' END AS urgency,
+                    DATEDIFF(p.fecha_requerida, CURDATE()) AS days_remaining
              FROM tbl_pedido p INNER JOIN tbl_estado_pedido e ON e.id_estado = p.id_estado_actual
              INNER JOIN tbl_cliente c ON c.id_cliente = p.id_cliente
-             WHERE p.fecha_requerida >= CURDATE() AND e.nombre NOT IN ('Entregado','Cancelado')
-             ORDER BY p.fecha_requerida, p.id_pedido LIMIT 6"
+             INNER JOIN tbl_sede s ON s.id_sede = p.id_sede
+             WHERE p.fecha_requerida <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+               AND e.nombre NOT IN ('Entregado','Cancelado')
+             ORDER BY FIELD(urgency, 'overdue', 'today', 'soon'), p.fecha_requerida, p.id_pedido LIMIT 8"
         )->fetchAll();
 
-        return ['kpis' => $kpis, 'por_estado' => $byState, 'proximos' => $upcoming];
+        $bySite = $db->query(
+            "SELECT s.nombre AS sede, COUNT(p.id_pedido) AS total
+             FROM tbl_sede s LEFT JOIN tbl_pedido p ON p.id_sede = s.id_sede
+             WHERE s.activo = 1 GROUP BY s.id_sede, s.nombre ORDER BY total DESC, s.nombre"
+        )->fetchAll();
+
+        $trend = $db->query(
+            "SELECT CONCAT('Sem ', FLOOR((DAY(p.fecha_pedido) - 1) / 7) + 1) AS label,
+                    COUNT(*) AS total,
+                    FLOOR((DAY(p.fecha_pedido) - 1) / 7) + 1 AS week_number
+             FROM tbl_pedido p
+             WHERE DATE_FORMAT(p.fecha_pedido, '%Y-%m') = (
+                 SELECT DATE_FORMAT(MAX(latest.fecha_pedido), '%Y-%m') FROM tbl_pedido latest
+             )
+             GROUP BY week_number
+             ORDER BY week_number"
+        )->fetchAll();
+
+        $trendPeriod = $db->query(
+            "SELECT DATE_FORMAT(MAX(fecha_pedido), '%m/%Y') FROM tbl_pedido"
+        )->fetchColumn() ?: '';
+
+        $compliance = $db->query(
+            "SELECT COUNT(*) AS delivered,
+                    SUM(DATE(h.fecha_hora) <= p.fecha_requerida) AS on_time
+             FROM tbl_pedido p
+             INNER JOIN tbl_historial_pedido h ON h.id_pedido = p.id_pedido
+             INNER JOIN tbl_estado_pedido e ON e.id_estado = h.id_estado AND e.nombre = 'Entregado'"
+        )->fetch();
+        $delivered = (int) ($compliance['delivered'] ?? 0);
+        $compliance['percentage'] = $delivered > 0 ? (int) round(((int) $compliance['on_time'] / $delivered) * 100) : 0;
+
+        return ['kpis' => $kpis, 'por_estado' => $byState, 'alertas' => $alerts, 'por_sede' => $bySite, 'tendencia' => $trend, 'periodo_tendencia' => $trendPeriod, 'cumplimiento' => $compliance];
     }
 
     public function activeIds(string $table, string $column, array $ids): array

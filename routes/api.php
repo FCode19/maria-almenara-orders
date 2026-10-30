@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Database;
+use App\Controllers\ApiController;
 use App\Helpers\Response;
 
 $router->get('/api/health', function (): void {
@@ -35,3 +36,9 @@ $router->get('/api/health', function (): void {
         Response::json($response, 500);
     }
 });
+
+$router->get('/api/v1/pedidos/resumen', [ApiController::class, 'summary']);
+$router->get('/api/v1/pedidos/alertas', [ApiController::class, 'alerts']);
+$router->get('/api/v1/pedidos/buscar', [ApiController::class, 'search']);
+$router->get('/api/v1/pedidos/seguimiento/{code}', [ApiController::class, 'tracking']);
+$router->get('/api/v1/catalogos/estados', [ApiController::class, 'states']);

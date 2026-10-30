@@ -24,17 +24,66 @@ class PedidoService
         return $this->repository->states();
     }
 
+    public function sites(): array
+    {
+        return $this->repository->sites();
+    }
+
     public function list(array $filters): array
     {
         return $this->repository->list([
             'search' => mb_substr(trim((string) ($filters['search'] ?? '')), 0, 100),
             'state' => mb_substr(trim((string) ($filters['state'] ?? '')), 0, 30),
+            'site' => max(0, (int) ($filters['site'] ?? 0)),
+            'modality' => in_array(($filters['modality'] ?? ''), ['RECOJO', 'DELIVERY'], true) ? $filters['modality'] : '',
+            'date_from' => $this->validDate($filters['date_from'] ?? ''),
+            'date_to' => $this->validDate($filters['date_to'] ?? ''),
+            'urgency' => in_array(($filters['urgency'] ?? ''), ['overdue', 'today', 'soon'], true) ? $filters['urgency'] : '',
         ]);
     }
 
     public function find(int $id): ?array
     {
-        return $id > 0 ? $this->repository->find($id) : null;
+        $order = $id > 0 ? $this->repository->find($id) : null;
+        if ($order) {
+            $order['urgency'] = self::urgency($order['fecha_requerida'], $order['estado']);
+            $transitions = self::allowedTransitions($order['estado']);
+            $order['next_action'] = $transitions[0] ?? null;
+        }
+        return $order;
+    }
+
+    public static function urgency(string $requiredDate, string $state): array
+    {
+        if (in_array($state, ['Entregado', 'Cancelado'], true)) {
+            return ['key' => 'none', 'label' => 'Sin alerta', 'message' => 'Pedido finalizado.'];
+        }
+
+        $today = new DateTimeImmutable('today');
+        $required = DateTimeImmutable::createFromFormat('!Y-m-d', $requiredDate);
+        if (!$required) {
+            return ['key' => 'none', 'label' => 'Sin alerta', 'message' => 'Fecha no disponible.'];
+        }
+
+        $days = (int) $today->diff($required)->format('%r%a');
+        if ($days < 0) {
+            $late = abs($days);
+            return ['key' => 'overdue', 'label' => 'Vencido', 'message' => "Debió estar listo hace {$late} " . ($late === 1 ? 'día.' : 'días.')];
+        }
+        if ($days === 0) {
+            return ['key' => 'today', 'label' => 'Vence hoy', 'message' => 'Debe quedar listo hoy.'];
+        }
+        if ($days <= 3) {
+            return ['key' => 'soon', 'label' => 'Próximo a vencer', 'message' => "Quedan {$days} " . ($days === 1 ? 'día.' : 'días.')];
+        }
+        return ['key' => 'normal', 'label' => 'En plazo', 'message' => "Quedan {$days} días."];
+    }
+
+    private function validDate(mixed $value): string
+    {
+        $value = trim((string) $value);
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date && $date->format('Y-m-d') === $value ? $value : '';
     }
 
     public function dashboard(): array
@@ -129,9 +178,10 @@ class PedidoService
         }
 
         $date = DateTimeImmutable::createFromFormat('!Y-m-d', $requiredDate);
-        $minimum = (new DateTimeImmutable('today'))->modify('+3 days');
-        if (!$date || $date->format('Y-m-d') !== $requiredDate || $date < $minimum) {
-            $errors[] = 'La fecha requerida debe ser como mínimo dentro de 3 días.';
+        $minimum = new DateTimeImmutable('today');
+        $maximum = $minimum->modify('+3 days');
+        if (!$date || $date->format('Y-m-d') !== $requiredDate || $date < $minimum || $date > $maximum) {
+            $errors[] = 'La fecha requerida debe estar entre hoy y los próximos 3 días.';
         }
         if (mb_strlen($notes) > 65535) {
             $errors[] = 'Las observaciones son demasiado extensas.';

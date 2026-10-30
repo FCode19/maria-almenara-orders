@@ -22,11 +22,20 @@ class PedidoController
     public function index(): void
     {
         $this->authorize();
-        $filters = ['search' => $_GET['search'] ?? '', 'state' => $_GET['state'] ?? ''];
+        $filters = [
+            'search' => $_GET['search'] ?? '',
+            'state' => $_GET['state'] ?? '',
+            'site' => $_GET['site'] ?? '',
+            'modality' => $_GET['modality'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+            'urgency' => $_GET['urgency'] ?? '',
+        ];
         View::render('pedidos.index', [
             'user' => Session::get('auth_user'),
             'orders' => $this->service->list($filters),
             'states' => $this->service->states(),
+            'sites' => $this->service->sites(),
             'filters' => $filters,
             'success' => Session::getFlash('success'),
             'error' => Session::getFlash('error'),
@@ -41,7 +50,8 @@ class PedidoController
             'catalogs' => $this->service->catalogs(),
             'error' => Session::getFlash('error'),
             'old' => Session::getFlash('old', []),
-            'minimumDate' => date('Y-m-d', strtotime('+3 days')),
+            'minimumDate' => date('Y-m-d'),
+            'maximumDate' => date('Y-m-d', strtotime('+3 days')),
         ]);
     }
 
